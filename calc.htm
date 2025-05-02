@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automatic Arithmetic Operations Solver</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #388E3C;
+            --accent-color: #8BC34A;
+            --background-color: #f5f5f5;
+            --text-color: #333;
+            --error-color: #f44336;
+            --success-color: #4CAF50;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            flex: 1;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .calculator-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .calculator-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .calculator-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .operations {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .operation-btn {
+            flex: 1;
+            padding: 0.5rem;
+            background-color: #e9e9e9;
+            color: var(--text-color);
+            border-radius: var(--border-radius);
+        }
+
+        .operation-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            text-align: center;
+            min-height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result.error {
+            color: var(--error-color);
+        }
+
+        .result.success {
+            color: var(--success-color);
+        }
+
+        .history {
+            margin-top: 1.5rem;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            color: var(--text-color);
+            font-weight: 600;
+            position: relative;
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .matrix-input {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .matrix-input input {
+            width: 100%;
+            text-align: center;
+        }
+
+        .matrix-dimensions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .matrix-dimensions .input-group {
+            flex: 1;
+        }
+
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: auto;
+        }
+
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--success-color);
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .steps {
+            background-color: #f0f8ff;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .steps.show {
+            display: block;
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+        }
+
+        .theme-toggle label {
+            margin-right: 0.5rem;
+            margin-bottom: 0;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .dark-mode {
+            --background-color: #222;
+            --text-color: #f5f5f5;
+        }
+
+        .dark-mode .calculator-card {
+            background-color: #333;
+            color: #f5f5f5;
+        }
+
+        .dark-mode input, 
+        .dark-mode select, 
+        .dark-mode textarea {
+            background-color: #444;
+            color: #f5f5f5;
+            border-color: #555;
+        }
+
+        .dark-mode .operation-btn {
+            background-color: #444;
+            color: #f5f5f5;
+        }
+
+        .dark-mode .result {
+            background-color: #444;
+            color: #f5f5f5;
+        }
+
+        .dark-mode .steps {
+            background-color: #444;
+            color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Automatic Arithmetic Operations Solver</h1>
+        <p>Solve basic and advanced arithmetic problems with ease</p>
+    </header>
+
+    <div class="container">
+        <div class="theme-toggle">
+            <label for="theme-switch">Dark Mode</label>
+            <label class="switch">
+                <input type="checkbox" id="theme-switch">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="basic">Basic Calculator</button>
+            <button class="tab" data-tab="advanced">Advanced Functions</button>
+            <button class="tab" data-tab="matrix">Matrix Operations</button>
+            <button class="tab" data-tab="equation">Equation Solver</button>
+        </div>
+
+        <div class="tab-content active" id="basic">
+            <div class="calculator-grid">
+                <div class="calculator-card">
+                    <div class="card-header">
+                        <span class="card-icon">➕</span>
+                        <h2>Basic Arithmetic</h2>
+                    </div>
+                    <div class="operations">
+                        <button class="operation-btn active" data-op="add">Addition</button>
+                        <button class="operation-btn" data-op="subtract">Subtraction</button>
+                        <button class="operation-btn" data-op="multiply">Multiplication</button>
+                        <button class="operation-btn" data-op="divide">Division</button>
+                    </div>
+                    <div class="input-group">
+                        <label for="num1">First Number:</label>
+                        <input type="number" id="num1" step="any" placeholder="Enter first number">
+                    </div>
+                    <div class="input-group">
+                        <label for="num2">Second Number:</label>
+                        <input type="number" id="num2" step="any" placeholder="Enter second number">
+                    </div>
+                    <button id="calculate-basic">Calculate</button>
+                    <div class="result" id="basic-result">Result will appear here</div>
+                    <div class="steps" id="basic-steps"></div>
+                    <div class="input-group">
+                        <label for="show-steps">
+                            <input type="checkbox" id="show-steps"> Show steps
+                        </label>
+                    </div>
+                </div>
+
+                <div class="calculator-card">
+                    <div class="card-header">
+                        <span class="card-icon">📊</span>
+                        <h2>Calculation History</h2>
+                    </div>
+                    <div class="history" id="history-list">
+                        <p>No calculations yet</p>
+                    </div>
+                    <button id="clear-history">Clear History</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="advanced">
+            <div class="calculator-grid">
+                <div class="calculator-card">
+                    <div class="card-header">
+                        <span class="card-icon">🧮</span>
+                        <h2>Advanced Functions</h2>
+                    </div>
+                    <div class="input-group">
+                        <label for="advanced-operation">Operation:</label>
+                        <select id="advanced-operation">
+                            <option value="power">Power (x^y)</option>
+                            <option value="sqrt">Square Root (√x)</option>
+                            <option value="log">Logarithm (base 10)</option>
+                            <option value="ln">Natural Logarithm</option>
+                            <option value="sin">Sine (sin)</option>
+                            <option value="cos">Cosine (cos)</option>
+                            <option value="tan">Tangent (tan)</option>
+                            <option value="factorial">Factorial (x!)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="advanced-num1">First Number (x):</label>
+                        <input type="number" id="advanced-num1" step="any" placeholder="Enter first number">
+                    </div>
+                    <div class="input-group" id="advanced-num2-group">
+                        <label for="advanced-num2">Second Number (y):</label>
+                        <input type="number" id="advanced-num2" step="any" placeholder="Enter second number">
+                    </div>
+                    <button id="calculate-advanced">Calculate</button>
+                    <div class="result" id="advanced-result">Result will appear here</div>
+                    <div class="steps" id="advanced-steps"></div>
+                    <div class="input-group">
+                        <label for="show-advanced-steps">
+                            <input type="checkbox" id="show-advanced-steps"> Show steps
+                        </label>
+                    </div>
+                </div>
+
+                <div class="calculator-card">
+                    <div class="card-header">
+                        <span class="card-icon">📝</span>
+                        <h2>Expression Evaluator</h2>
+                    </div>
+                    <div class="input-group">
+                        <label for="expression">Mathematical Expression:</label>
+                        <input type="text" id="expression" placeholder="e.g., 2*(3+4)/2">
+                    </div>
+                    <p>Supported operations: +, -, *, /, ^, (), sin(), cos(), tan(), sqrt(), log()</p>
+                    <button id="evaluate-expression">Evaluate</button>
+                    <div class="result" id="expression-result">Result will appear here</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="matrix">
+            <div class="calculator-card">
+                <div class="card-header">
+                    <span class="card-icon">🔢</span>
+                    <h2>Matrix Operations</h2>
+                </div>
+                <div class="input-group">
+                    <label for="matrix-operation">Operation:</label>
+                    <select id="matrix-operation">
+                        <option value="addition">Addition</option>
+                        <option value="subtraction">Subtraction</option>
+                        <option value="multiplication">Multiplication</option>
+                        <option value="determinant">Determinant</option>
+                        <option value="transpose">Transpose</option>
+                        <option value="inverse">Inverse</option>
+                    </select>
+                </div>
+                
+                <div id="matrix-single-operations" style="display: none;">
+                    <h3>Matrix</h3>
+                    <div class="matrix-dimensions">
+                        <div class="input-group">
+                            <label for="matrix-rows">Rows:</label>
+                            <select id="matrix-rows">
+                                <option value="2">2</option>
+                                <option value="3" selected>3</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="matrix-cols">Columns:</label>
+                            <select id="matrix-cols">
+                                <option value="2">2</option>
+                                <option value="3" selected>3</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="matrix-a" class="matrix-input">
+                        <!-- Matrix inputs will be generated via JavaScript -->
+                    </div>
+                </div>
+                
+                <div id="matrix-dual-operations">
+                    <h3>Matrix A</h3>
+                    <div class="matrix-dimensions">
+                        <div class="input-group">
+                            <label for="matrix-a-rows">Rows:</label>
+                            <select id="matrix-a-rows">
+                                <option value="2">2</option>
+                                <option value="3" selected>3</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="matrix-a-cols">Columns:</label>
+                            <select id="matrix-a-cols">
+                                <option value="2">2</option>
+                                <option value="3" selected>3</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="matrix-a-input" class="matrix-input">
+                        <!-- Matrix inputs will be generated via JavaScript -->
+                    </div>
+                    
+                    <h3>Matrix B</h3>
+                    <div class="matrix-dimensions">
+                        <div class="input-group">
+                            <label for="matrix-b-rows">Rows:</label>
+                            <select id="matrix-b-rows">
+                                <option value="2">2</option>
+                                <option value="3" selected>3</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="matrix-b-cols">Columns:</label>
+                            <select id="matrix-b-cols">
+                                <option value="2">2</option>
+                                <option value="3" selected>3</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="matrix-b-input" class="matrix-input">
+                        <!-- Matrix inputs will be generated via JavaScript -->
+                    </div>
+                </div>
+                
+                <button id="calculate-matrix">Calculate</button>
+                <div class="result" id="matrix-result">Result will appear here</div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="equation">
+            <div class="calculator-grid">
+                <div class="calculator-card">
+                    <div class="card-header">
+                        <span class="card-icon">➗</span>
+                        <h2>Linear Equation Solver</h2>
+                    </div>
+                    <div class="input-group">
+                        <label for="equation-type">Equation Type:</label>
+                        <select id="equation-type">
+                            <option value="linear">Linear (ax + b = 0)</option>
+                            <option value="quadratic">Quadratic (ax² + bx + c = 0)</option>
+                            <option value="system-2">System of 2 Linear Equations</option>
+                        </select>
+                    </div>
+                    
+                    <div id="linear-equation">
+                        <div class="input-group">
+                            <label for="linear-a">a:</label>
+                            <input type="number" id="linear-a" step="any" placeholder="Enter coefficient a">
+                        </div>
+                        <div class="input-group">
+                            <label for="linear-b">b:</label>
+                            <input type="number" id="linear-b" step="any" placeholder="Enter coefficient b">
+                        </div>
+                    </div>
+                    
+                    <div id="quadratic-equation" style="display: none;">
+                        <div class="input-group">
+                            <label for="quadratic-a">a:</label>
+                            <input type="number" id="quadratic-a" step="any" placeholder="Enter coefficient a">
+                        </div>
+                        <div class="input-group">
+                            <label for="quadratic-b">b:</label>
+                            <input type="number" id="quadratic-b" step="any" placeholder="Enter coefficient b">
+                        </div>
+                        <div class="input-group">
+                            <label for="quadratic-c">c:</label>
+                            <input type="number" id="quadratic-c" step="any" placeholder="Enter coefficient c">
+                        </div>
+                    </div>
+                    
+                    <div id="system-equation" style="display: none;">
+                        <h3>First Equation: a₁x + b₁y = c₁</h3>
+                        <div class="input-group">
+                            <label for="system-a1">a₁:</label>
+                            <input type="number" id="system-a1" step="any" placeholder="Enter coefficient a₁">
+                        </div>
+                        <div class="input-group">
+                            <label for="system-b1">b₁:</label>
+                            <input type="number" id="system-b1" step="any" placeholder="Enter coefficient b₁">
+                        </div>
+                        <div class="input-group">
+                            <label for="system-c1">c₁:</label>
+                            <input type="number" id="system-c1" step="any" placeholder="Enter constant c₁">
+                        </div>
+                        
+                        <h3>Second Equation: a₂x + b₂y = c₂</h3>
+                        <div class="input-group">
+                            <label for="system-a2">a₂:</label>
+                            <input type="number" id="system-a2" step="any" placeholder="Enter coefficient a₂">
+                        </div>
+                        <div class="input-group">
+                            <label for="system-b2">b₂:</label>
+                            <input type="number" id="system-b2" step="any" placeholder="Enter coefficient b₂">
+                        </div>
+                        <div class="input-group">
+                            <label for="system-c2">c₂:</label>
+                            <input type="number" id="system-c2" step="any" placeholder="Enter constant c₂">
+                        </div>
+                    </div>
+                    
+                    <button id="solve-equation">Solve</button>
+                    <div class="result" id="equation-result">Solution will appear here</div>
+                    <div class="steps" id="equation-steps"></div>
+                    <div class="input-group">
+                        <label for="show-equation-steps">
+                            <input type="checkbox" id="show-equation-steps"> Show steps
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">Operation completed successfully!</div>
+
+    <footer>
+        <p>© 2025 Automatic Arithmetic Operations Solver | Developed with ❤️</p>
+    </footer>
+
+    <script>
+        // Theme Toggle
+        const themeSwitch = document.getElementById('theme-switch');
+        themeSwitch.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode');
+        });
+
+        // Tab Switching
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show corresponding content
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === tabId) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // Basic Calculator Functionality
+        const operationBtns = document.querySelectorAll('.operation-btn');
+        let currentOperation = 'add';
+
+        operationBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                operationBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentOperation = btn.getAttribute('data-op');
+            });
+        });
+
+        // History Management
+        let calculationHistory = JSON.parse(localStorage.getItem('calculationHistory')) || [];
+        const historyList = document.getElementById('history-list');
+        const clearHistoryBtn = document.getElementById('clear-history');
+
+        function updateHistoryDisplay() {
+            if (calculationHistory.length === 0) {
+                historyList.innerHTML = '<p>No calculations yet</p>';
+                return;
+            }
+
+            historyList.innerHTML = '';
+            calculationHistory.slice(-10).reverse().forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div>${item.expression}</div>
+                    <div>=</div>
+                    <div>${item.result}</div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        function addToHistory(expression, result) {
+            calculationHistory.push({ expression, result });
+            if (calculationHistory.length > 50) {
+                calculationHistory.shift();
+            }
+            localStorage.setItem('calculationHistory', JSON.stringify(calculationHistory));
+            updateHistoryDisplay();
+        }
+
+        clearHistoryBtn.addEventListener('click', () => {
+            calculationHistory = [];
+            localStorage.removeItem('calculationHistory');
+            updateHistoryDisplay();
+            showNotification('History cleared');
+        });
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Basic Calculator
+        const calculateBasicBtn = document.getElementById('calculate-basic');
+        const num1Input = document.getElementById('num1');
+        const num2Input = document.getElementById('num2');
+        const basicResult = document.getElementById('basic-result');
+        const basicSteps = document.getElementById('basic-steps');
+        const showSteps = document.getElementById('show-steps');
+
+        calculateBasicBtn.addEventListener('click', () => {
+            const num1 = parseFloat(num1Input.value);
+            const num2 = parseFloat(num2Input.value);
+            
+            if (isNaN(num1) || isNaN(num2)) {
+                basicResult.textContent = 'Please enter valid numbers';
+                basicResult.className = 'result error';
+                return;
+            }
+            
+            let result, expression, steps;
+            
+            switch (currentOperation) {
+                case 'add':
+                    result = num1 + num2;
+                    expression = `${num1} + ${num2}`;
+                    steps = `Start with ${num1}.<br>Add ${num2}.<br>Result is ${result}.`;
+                    break;
+                case 'subtract':
+                    result = num1 - num2;
+                    expression = `${num1} - ${num2}`;
+                    steps = `Start with ${num1}.<br>Subtract ${num2}.<br>Result is ${result}.`;
+                    break;
+                case 'multiply':
+                    result = num1 * num2;
+                    expression = `${num1} × ${num2}`;
+                    steps = `Multiply ${num1} by ${num2}.<br>Result is ${result}.`;
+                    break;
+                case 'divide':
+                    if (num2 === 0) {
+                        basicResult.textContent = 'Cannot divide by zero';
+                        basicResult.className = 'result error';
+                        return;
+                    }
+                    result = num1 / num2;
+                    expression = `${num1} ÷ ${num2}`;
+                    steps = `Divide ${num1} by ${num2}.<br>Result is ${result}.`;
+                    break;
+            }
+            
+            basicResult.textContent = result;
+            basicResult.className = 'result success';
+            
+            if (showSteps.checked) {
+                basicSteps.innerHTML = steps;
+                basicSteps.classList.add('show');
+            } else {
+                basicSteps.classList.remove('show');
+            }
+            
+            addToHistory(expression, result);
+        });
+
+        showSteps.addEventListener('change', () => {
+            if (showSteps.checked && basicSteps.innerHTML) {
+                basicSteps.classList.add('show');
+            } else {
+                basicSteps.classList.remove('show');
+            }
+        });
+
+        // Advanced Functions
+        const advancedOperation = document.getElementById('advanced-operation');
+        const advancedNum1 = document.getElementById('advanced-num1');
+        const advancedNum2 = document.getElementById('advanced-num2');
+        const advancedNum2Group = document.getElementById('advanced-num2-group');
+        const calculateAdvancedBtn = document.getElementById('calculate-advanced');
+        const advancedResult = document.getElementById('advanced-result');
+        const advancedSteps = document.getElementById('advanced-steps');
+        const showAdvancedSteps = document.getElementById('show-advanced-steps');
+
+        // Show/hide second number based on operation
+        advancedOperation.addEventListener('change', () => {
+            const operation = advancedOperation.value;
+            if (operation === 'power') {
+                advancedNum2Group.style.display = 'block';
+            } else {
+                advancedNum2Group.style.display = 'none';
+            }
+        });
+
+        calculateAdvancedBtn.addEventListener('click', () => {
+            const operation = advancedOperation.value;
+            const num1 = parseFloat(advancedNum1.value);
+            const num2 = parseFloat(advancedNum2.value);
+            
+            if (isNaN(num1) || (operation === 'power' && isNaN(num2))) {
+                advancedResult.textContent = 'Please enter valid numbers';
+                advancedResult.className = 'result error';
+                return;
+            }
+            
+            let result, expression, steps;
+            
+            switch (operation) {
+                case 'power':
+                    result = Math.pow(num1, num2);
+                    expression = `${num1}^${num2}`;
+                    steps = `Start with ${num1}.<br>Raise to the power of ${num2}.<br>Result is ${result}.`;
+                    break;
+                case 'sqrt':
+                    if (num1 < 0) {
+                        advancedResult.textContent = 'Cannot calculate square root of negative number';
+                        advancedResult.className = 'result error';
+                        return;
+                    }
+                    result = Math.sqrt(num1);
+                    expression = `√${num1}`;
+                    steps = `Calculate the square root of ${num1}.<br>Result is ${result}.`;
+                    break;
+                case 'log':
+                    if (num1 <= 0) {
+                        advancedResult.textContent = 'Cannot calculate logarithm of non-positive number';
+                        advancedResult.className = 'result error';
+                        return;
+                    }
+                    result = Math.log10(num1);
+                    expression = `log(${num1})`;
+                    steps = `Calculate the base-10 logarithm of ${num1}.<br>Result is ${result}.`;
+                    break;
+                case 'ln':
+                    if (num1 <= 0) {
+                        advancedResult.textContent = 'Cannot calculate natural logarithm of non-positive number';
+                        advancedResult.className = 'result error';
+                        return;
+                    }
+                    result = Math.log(num1);
+                    expression = `ln(${num1})`;
+                    steps = `Calculate the natural logarithm of ${num1}.<br>Result is ${result}.`;
+                    break;
+                case 'sin':
+                    result = Math.sin(num1 * Math.PI / 180); // Convert to radians
+                    expression = `sin(${num1}°)`;
+                    steps = `Convert ${num1} degrees to radians: ${num1} × π/180 = ${(num1 * Math.PI / 180).toFixed(6)} radians.<br>
+                         Calculate sine of ${(num1 * Math.PI / 180).toFixed(6)} radians.<br>
+                         Result is ${result.toFixed(6)}.`;
+                    break;
+                case 'cos':
+                    result = Math.cos(num1 * Math.PI / 180); // Convert to radians
+                    expression = `cos(${num1}°)`;
+                    steps = `Convert ${num1} degrees to radians: ${num1} × π/180 = ${(num1 * Math.PI / 180).toFixed(6)} radians.<br>
+                         Calculate cosine of ${(num1 * Math.PI / 180).toFixed(6)} radians.<br>
+                         Result is ${result.toFixed(6)}.`;
+                    break;
+                case 'tan':
+                    result = Math.tan(num1 * Math.PI / 180); // Convert to radians
+                    expression = `tan(${num1}°)`;
+                    steps = `Convert ${num1} degrees to radians: ${num1} × π/180 = ${(num1 * Math.PI / 180).toFixed(6)} radians.<br>
+                         Calculate tangent of ${(num1 * Math.PI / 180).toFixed(6)} radians.<br>
+                         Result is ${result.toFixed(6)}.`;
+                    break;
+                case 'factorial':
+                    if (num1 < 0 || !Number.isInteger(num1)) {
+                        advancedResult.textContent = 'Factorial requires a non-negative integer';
+                        advancedResult.className = 'result error';
+                        return;
+                    }
+                    result = factorial(num1);
+                    expression = `${num1}!`;
+                    steps = calculateFactorialSteps(num1);
+                    break;
+            }
+            
+            advancedResult.textContent = result;
+            advancedResult.className = 'result success';
+            
+            if (showAdvancedSteps.checked) {
+                advancedSteps.innerHTML = steps;
+                advancedSteps.classList.add('show');
+            } else {
+                advancedSteps.classList.remove('show');
+            }
+            
+            addToHistory(expression, result);
+        });
+
+        function factorial(n) {
+            if (n === 0 || n === 1) return 1;
+            let result = 1;
+            for (let i = 2; i <= n; i++) {
+                result *= i;
+            }
+            return result;
+        }
+
+        function calculateFactorialSteps(n) {
+            let steps = `Calculate ${n}!<br>`;
+            if (n === 0 || n === 1) {
+                steps += `${n}! = 1`;
+                return steps;
+            }
+            
+            steps += `${n}! = ${n} × ${n-1} × ... × 2 × 1<br>`;
+            let calculation = `${n}`;
+            let result = n;
+            
+            for (let i = n-1; i >= 1; i--) {
+                calculation += ` × ${i}`;
+                result *= i;
+                if (i === 1) {
+                    steps += `${calculation} = ${result}`;
+                }
+            }
+            
+            return steps;
+        }
+
+        showAdvancedSteps.addEventListener('change', () => {
+            if (showAdvancedSteps.checked && advancedSteps.innerHTML) {
+                advancedSteps.classList.add('show');
+            } else {
+                advancedSteps.classList.remove('show');
+            }
+        });
+
+        // Expression Evaluator
+        const expressionInput = document.getElementById('expression');
+        const evaluateExpressionBtn = document.getElementById('evaluate-expression');
+        const expressionResult = document.getElementById('expression-result');
+
+        evaluateExpressionBtn.addEventListener('click', () => {
+            const expression = expressionInput.value.trim();
+            
+            if (!expression) {
+                expressionResult.textContent = 'Please enter an expression';
+                expressionResult.className = 'result error';
+                return;
+            }
+            
+            try {
+                // Replace custom functions with JavaScript equivalents
+                let processedExpression = expression
+                    .replace(/\^/g, '**')
+                    .replace(/sin\(/g, 'Math.sin(')
+                    .replace(/cos\(/g, 'Math.cos(')
+                    .replace(/tan\(/g, 'Math.tan(')
+                    .replace(/sqrt\(/g, 'Math.sqrt(')
+                    .replace(/log\(/g, 'Math.log10(');
+                
+                const result = eval(processedExpression);
+                
+                if (isNaN(result) || !isFinite(result)) {
+                    expressionResult.textContent = 'Invalid expression';
+                    expressionResult.className = 'result error';
+                    return;
+                }
+                
+                expressionResult.textContent = result;
+                expressionResult.className = 'result success';
+                
+                addToHistory(expression, result);
+            } catch (error) {
+                expressionResult.textContent = 'Invalid expression';
+                expressionResult.className = 'result error';
+            }
+        });
+
+        // Matrix Operations
+        const matrixOperation = document.getElementById('matrix-operation');
+        const matrixSingleOperations = document.getElementById('matrix-single-operations');
+        const matrixDualOperations = document.getElementById('matrix-dual-operations');
+        const calculateMatrixBtn = document.getElementById('calculate-matrix');
+        const matrixResult = document.getElementById('matrix-result');
+
+        // Generate matrix inputs based on dimensions
+        function generateMatrixInputs(container, rows, cols) {
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.step = 'any';
+                    input.placeholder = `(${i+1},${j+1})`;
+                    input.dataset.row = i;
+                    input.dataset.col = j;
+                    container.appendChild(input);
+                }
+            }
+        }
+
+        // Get matrix values from inputs
+        function getMatrixValues(container) {
+            const inputs = container.querySelectorAll('input');
+            const values = [];
+            let row = -1;
+            let col = 0;
+            
+            inputs.forEach((input, index) => {
+                const value = parseFloat(input.value) || 0;
+                
+                if (index % parseInt(container.style.gridTemplateColumns.match(/\d+/)[0]) === 0) {
+                    row++;
+                    values.push([]);
+                    col = 0;
+                }
+                
+                values[row][col] = value;
+                col++;
+            });
+            
+            return values;
+        }
+
+        // Display matrix in result
+        function displayMatrix(matrix) {
+            let html = '<div style="text-align: center; font-family: monospace;">';
+            
+            html += '⎡ ';
+            for (let i = 0; i < matrix.length; i++) {
+                if (i > 0) html += '⎢ ';
+                
+                for (let j = 0; j < matrix[i].length; j++) {
+                    html += matrix[i][j].toFixed(2).padStart(6);
+                    if (j < matrix[i].length - 1) html += ' ';
+                }
+                
+                if (i < matrix.length - 1) html += ' ⎥<br>';
+            }
+            html += ' ⎦';
+            
+            html += '</div>';
+            return html;
+        }
+
+        // Matrix addition
+        function addMatrices(a, b) {
+            if (a.length !== b.length || a[0].length !== b[0].length) {
+                throw new Error('Matrices must have the same dimensions for addition');
+            }
+            
+            const result = [];
+            for (let i = 0; i < a.length; i++) {
+                result[i] = [];
+                for (let j = 0; j < a[i].length; j++) {
+                    result[i][j] = a[i][j] + b[i][j];
+                }
+            }
+            
+            return result;
+        }
+
+        // Matrix subtraction
+        function subtractMatrices(a, b) {
+            if (a.length !== b.length || a[0].length !== b[0].length) {
+                throw new Error('Matrices must have the same dimensions for subtraction');
+            }
+            
+            const result = [];
+            for (let i = 0; i < a.length; i++) {
+                result[i] = [];
+                for (let j = 0; j < a[i].length; j++) {
+                    result[i][j] = a[i][j] - b[i][j];
+                }
+            }
+            
+            return result;
+        }
+
+        // Matrix multiplication
+        function multiplyMatrices(a, b) {
+            if (a[0].length !== b.length) {
+                throw new Error('Number of columns in first matrix must equal number of rows in second matrix');
+            }
+            
+            const result = [];
+            for (let i = 0; i < a.length; i++) {
+                result[i] = [];
+                for (let j = 0; j < b[0].length; j++) {
+                    result[i][j] = 0;
+                    for (let k = 0; k < a[0].length; k++) {
+                        result[i][j] += a[i][k] * b[k][j];
+                    }
+                }
+            }
+            
+            return result;
+        }
+
+        // Matrix transpose
+        function transposeMatrix(a) {
+            const result = [];
+            for (let j = 0; j < a[0].length; j++) {
+                result[j] = [];
+                for (let i = 0; i < a.length; i++) {
+                    result[j][i] = a[i][j];
+                }
+            }
+            
+            return result;
+        }
+
+        // Matrix determinant (for 2x2 and 3x3 matrices)
+        function determinant(a) {
+            if (a.length !== a[0].length) {
+                throw new Error('Matrix must be square to calculate determinant');
+            }
+            
+            if (a.length === 2) {
+                return a[0][0] * a[1][1] - a[0][1] * a[1][0];
+            } else if (a.length === 3) {
+                return a[0][0] * (a[1][1] * a[2][2] - a[1][2] * a[2][1]) -
+                       a[0][1] * (a[1][0] * a[2][2] - a[1][2] * a[2][0]) +
+                       a[0][2] * (a[1][0] * a[2][1] - a[1][1] * a[2][0]);
+            } else {
+                throw new Error('Determinant calculation is implemented only for 2x2 and 3x3 matrices');
+            }
+        }
+
+        // Matrix inverse (for 2x2 and 3x3 matrices)
+        function inverseMatrix(a) {
+            if (a.length !== a[0].length) {
+                throw new Error('Matrix must be square to calculate inverse');
+            }
+            
+            const det = determinant(a);
+            if (Math.abs(det) < 1e-10) {
+                throw new Error('Matrix is singular, cannot calculate inverse');
+            }
+            
+            if (a.length === 2) {
+                return [
+                    [a[1][1] / det, -a[0][1] / det],
+                    [-a[1][0] / det, a[0][0] / det]
+                ];
+            } else if (a.length === 3) {
+                const result = [];
+                for (let i = 0; i < 3; i++) {
+                    result[i] = [];
+                    for (let j = 0; j < 3; j++) {
+                        const minor = [
+                            [a[(i+1)%3][(j+1)%3], a[(i+1)%3][(j+2)%3]],
+                            [a[(i+2)%3][(j+1)%3], a[(i+2)%3][(j+2)%3]]
+                        ];
+                        const cofactor = determinant(minor) * Math.pow(-1, i+j);
+                        result[j][i] = cofactor / det; // Note the transpose here (j, i)
+                    }
+                }
+                return result;
+            } else {
+                throw new Error('Inverse calculation is implemented only for 2x2 and 3x3 matrices');
+            }
+        }
+
+        // Update matrix operation UI based on selected operation
+        matrixOperation.addEventListener('change', () => {
+            const operation = matrixOperation.value;
+            
+            if (operation === 'determinant' || operation === 'transpose' || operation === 'inverse') {
+                matrixSingleOperations.style.display = 'block';
+                matrixDualOperations.style.display = 'none';
+            } else {
+                matrixSingleOperations.style.display = 'none';
+                matrixDualOperations.style.display = 'block';
+            }
+        });
+
+        // Initialize matrix inputs
+        const matrixAInput = document.getElementById('matrix-a-input');
+        const matrixBInput = document.getElementById('matrix-b-input');
+        const matrixA = document.getElementById('matrix-a');
+        const matrixARows = document.getElementById('matrix-a-rows');
+        const matrixACols = document.getElementById('matrix-a-cols');
+        const matrixBRows = document.getElementById('matrix-b-rows');
+        const matrixBCols = document.getElementById('matrix-b-cols');
+        const matrixRows = document.getElementById('matrix-rows');
+        const matrixCols = document.getElementById('matrix-cols');
+
+        // Generate initial matrices
+        generateMatrixInputs(matrixAInput, 3, 3);
+        generateMatrixInputs(matrixBInput, 3, 3);
+        generateMatrixInputs(matrixA, 3, 3);
+
+        // Update matrices when dimensions change
+        matrixARows.addEventListener('change', () => {
+            generateMatrixInputs(matrixAInput, parseInt(matrixARows.value), parseInt(matrixACols.value));
+        });
+
+        matrixACols.addEventListener('change', () => {
+            generateMatrixInputs(matrixAInput, parseInt(matrixARows.value), parseInt(matrixACols.value));
+            
+            // For multiplication, B rows must match A cols
+            if (matrixOperation.value === 'multiplication') {
+                matrixBRows.value = matrixACols.value;
+                generateMatrixInputs(matrixBInput, parseInt(matrixBRows.value), parseInt(matrixBCols.value));
+            }
+        });
+
+        matrixBRows.addEventListener('change', () => {
+            generateMatrixInputs(matrixBInput, parseInt(matrixBRows.value), parseInt(matrixBCols.value));
+        });
+
+        matrixBCols.addEventListener('change', () => {
+            generateMatrixInputs(matrixBInput, parseInt(matrixBRows.value), parseInt(matrixBCols.value));
+        });
+
+        matrixRows.addEventListener('change', () => {
+            generateMatrixInputs(matrixA, parseInt(matrixRows.value), parseInt(matrixCols.value));
+            
+            // For inverse and determinant, matrix must be square
+            if (matrixOperation.value === 'inverse' || matrixOperation.value === 'determinant') {
+                matrixCols.value = matrixRows.value;
+                generateMatrixInputs(matrixA, parseInt(matrixRows.value), parseInt(matrixCols.value));
+            }
+        });
+
+        matrixCols.addEventListener('change', () => {
+            generateMatrixInputs(matrixA, parseInt(matrixRows.value), parseInt(matrixCols.value));
+            
+            // For inverse and determinant, matrix must be square
+            if (matrixOperation.value === 'inverse' || matrixOperation.value === 'determinant') {
+                matrixRows.value = matrixCols.value;
+                generateMatrixInputs(matrixA, parseInt(matrixRows.value), parseInt(matrixCols.value));
+            }
+        });
+
+        calculateMatrixBtn.addEventListener('click', () => {
+            const operation = matrixOperation.value;
+            
+            try {
+                let result, expression;
+                
+                if (operation === 'determinant' || operation === 'transpose' || operation === 'inverse') {
+                    // Single matrix operations
+                    const matrix = getMatrixValues(matrixA);
+                    
+                    if (operation === 'determinant') {
+                        if (matrix.length !== matrix[0].length) {
+                            throw new Error('Matrix must be square to calculate determinant');
+                        }
+                        result = determinant(matrix);
+                        expression = `det(A)`;
+                        matrixResult.innerHTML = `Determinant = ${result}`;
+                    } else if (operation === 'transpose') {
+                        result = transposeMatrix(matrix);
+                        expression = `A^T`;
+                        matrixResult.innerHTML = `Transpose:<br>${displayMatrix(result)}`;
+                    } else if (operation === 'inverse') {
+                        if (matrix.length !== matrix[0].length) {
+                            throw new Error('Matrix must be square to calculate inverse');
+                        }
+                        result = inverseMatrix(matrix);
+                        expression = `A^(-1)`;
+                        matrixResult.innerHTML = `Inverse:<br>${displayMatrix(result)}`;
+                    }
+                } else {
+                    // Two matrix operations
+                    const matrixA = getMatrixValues(matrixAInput);
+                    const matrixB = getMatrixValues(matrixBInput);
+                    
+                    if (operation === 'addition') {
+                        result = addMatrices(matrixA, matrixB);
+                        expression = `A + B`;
+                        matrixResult.innerHTML = `A + B =<br>${displayMatrix(result)}`;
+                    } else if (operation === 'subtraction') {
+                        result = subtractMatrices(matrixA, matrixB);
+                        expression = `A - B`;
+                        matrixResult.innerHTML = `A - B =<br>${displayMatrix(result)}`;
+                    } else if (operation === 'multiplication') {
+                        result = multiplyMatrices(matrixA, matrixB);
+                        expression = `A × B`;
+                        matrixResult.innerHTML = `A × B =<br>${displayMatrix(result)}`;
+                    }
+                }
+                
+                matrixResult.className = 'result success';
+                
+                // For matrix operations, we don't add to history as it's complex to display
+            } catch (error) {
+                matrixResult.textContent = error.message;
+                matrixResult.className = 'result error';
+            }
+        });
+
+        // Equation Solver
+        const equationType = document.getElementById('equation-type');
+        const linearEquation = document.getElementById('linear-equation');
+        const quadraticEquation = document.getElementById('quadratic-equation');
+        const systemEquation = document.getElementById('system-equation');
+        const solveEquationBtn = document.getElementById('solve-equation');
+        const equationResult = document.getElementById('equation-result');
+        const equationSteps = document.getElementById('equation-steps');
+        const showEquationSteps = document.getElementById('show-equation-steps');
+
+        // Show the appropriate equation inputs based on selected type
+        equationType.addEventListener('change', () => {
+            const type = equationType.value;
+            
+            linearEquation.style.display = 'none';
+            quadraticEquation.style.display = 'none';
+            systemEquation.style.display = 'none';
+            
+            if (type === 'linear') {
+                linearEquation.style.display = 'block';
+            } else if (type === 'quadratic') {
+                quadraticEquation.style.display = 'block';
+            } else if (type === 'system-2') {
+                systemEquation.style.display = 'block';
+            }
+        });
+
+        solveEquationBtn.addEventListener('click', () => {
+            const type = equationType.value;
+            
+            try {
+                let result, steps, expression;
+                
+                if (type === 'linear') {
+                    const a = parseFloat(document.getElementById('linear-a').value);
+                    const b = parseFloat(document.getElementById('linear-b').value);
+                    
+                    if (isNaN(a) || isNaN(b)) {
+                        throw new Error('Please enter valid coefficients');
+                    }
+                    
+                    if (a === 0) {
+                        if (b === 0) {
+                            result = 'Infinite solutions (identity)';
+                            steps = `The equation is ${a}x + ${b} = 0<br>
+                                     Since both a and b are 0, this equation is true for all values of x<br>
+                                     Therefore, the solution is the set of all real numbers.`;
+                        } else {
+                            result = 'No solution (contradiction)';
+                            steps = `The equation is ${a}x + ${b} = 0<br>
+                                     Since a = 0 and b ≠ 0, this equation has no solutions<br>
+                                     ${b} = 0 is a contradiction.`;
+                        }
+                    } else {
+                        const x = -b / a;
+                        result = `x = ${x}`;
+                        steps = `The equation is ${a}x + ${b} = 0<br>
+                                 ${a}x = ${-b}<br>
+                                 x = ${-b} / ${a} = ${x}`;
+                    }
+                    
+                    expression = `${a}x + ${b} = 0`;
+                } else if (type === 'quadratic') {
+                    const a = parseFloat(document.getElementById('quadratic-a').value);
+                    const b = parseFloat(document.getElementById('quadratic-b').value);
+                    const c = parseFloat(document.getElementById('quadratic-c').value);
+                    
+                    if (isNaN(a) || isNaN(b) || isNaN(c)) {
+                        throw new Error('Please enter valid coefficients');
+                    }
+                    
+                    if (a === 0) {
+                        // Linear equation
+                        if (b === 0) {
+                            if (c === 0) {
+                                result = 'Infinite solutions (identity)';
+                                steps = `The equation is ${a}x² + ${b}x + ${c} = 0<br>
+                                         Since a, b, and c are all 0, this equation is true for all values of x<br>
+                                         Therefore, the solution is the set of all real numbers.`;
+                            } else {
+                                result = 'No solution (contradiction)';
+                                steps = `The equation is ${a}x² + ${b}x + ${c} = 0<br>
+                                         Since a = 0, b = 0, and c ≠ 0, this equation has no solutions<br>
+                                         ${c} = 0 is a contradiction.`;
+                            }
+                        } else {
+                            const x = -c / b;
+                            result = `x = ${x} (linear equation)`;
+                            steps = `The equation is ${a}x² + ${b}x + ${c} = 0<br>
+                                     Since a = 0, this is actually a linear equation: ${b}x + ${c} = 0<br>
+                                     ${b}x = ${-c}<br>
+                                     x = ${-c} / ${b} = ${x}`;
+                        }
+                    } else {
+                        // Quadratic equation
+                        const discriminant = b * b - 4 * a * c;
+                        steps = `The equation is ${a}x² + ${b}x + ${c} = 0<br>
+                                 Using the quadratic formula: x = (-b ± √(b² - 4ac)) / (2a)<br>
+                                 Discriminant = b² - 4ac = ${b}² - 4 × ${a} × ${c} = ${discriminant}<br>`;
+                        
+                        if (discriminant > 0) {
+                            const x1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+                            const x2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+                            result = `x₁ = ${x1}, x₂ = ${x2}`;
+                            steps += `Since the discriminant is positive, there are two real solutions:<br>
+                                     x₁ = (${-b} + √${discriminant}) / (2 × ${a}) = ${x1}<br>
+                                     x₂ = (${-b} - √${discriminant}) / (2 × ${a}) = ${x2}`;
+                        } else if (discriminant === 0) {
+                            const x = -b / (2 * a);
+                            result = `x = ${x} (double root)`;
+                            steps += `Since the discriminant is zero, there is one real solution (double root):<br>
+                                     x = ${-b} / (2 × ${a}) = ${x}`;
+                        } else {
+                            const realPart = -b / (2 * a);
+                            const imagPart = Math.sqrt(-discriminant) / (2 * a);
+                            result = `x₁ = ${realPart} + ${imagPart}i, x₂ = ${realPart} - ${imagPart}i`;
+                            steps += `Since the discriminant is negative, there are two complex solutions:<br>
+                                     x₁ = ${-b} / (2 × ${a}) + √(${-discriminant}) / (2 × ${a})i = ${realPart} + ${imagPart}i<br>
+                                     x₂ = ${-b} / (2 × ${a}) - √(${-discriminant}) / (2 × ${a})i = ${realPart} - ${imagPart}i`;
+                        }
+                    }
+                    
+                    expression = `${a}x² + ${b}x + ${c} = 0`;
+                } else if (type === 'system-2') {
+                    const a1 = parseFloat(document.getElementById('system-a1').value);
+                    const b1 = parseFloat(document.getElementById('system-b1').value);
+                    const c1 = parseFloat(document.getElementById('system-c1').value);
+                    const a2 = parseFloat(document.getElementById('system-a2').value);
+                    const b2 = parseFloat(document.getElementById('system-b2').value);
+                    const c2 = parseFloat(document.getElementById('system-c2').value);
+                    
+                    if (isNaN(a1) || isNaN(b1) || isNaN(c1) || isNaN(a2) || isNaN(b2) || isNaN(c2)) {
+                        throw new Error('Please enter valid coefficients');
+                    }
+                    
+                    steps = `The system of equations is:<br>
+                             ${a1}x + ${b1}y = ${c1}<br>
+                             ${a2}x + ${b2}y = ${c2}<br><br>`;
+                    
+                    // Determinant of coefficient matrix
+                    const det = a1 * b2 - a2 * b1;
+                    
+                    if (Math.abs(det) < 1e-10) {
+                        // Lines are parallel or coincident
+                        const det1 = c1 * b2 - c2 * b1;
+                        const det2 = a1 * c2 - a2 * c1;
+                        
+                        if (Math.abs(det1) < 1e-10 && Math.abs(det2) < 1e-10) {
+                            result = 'Infinite solutions (coincident lines)';
+                            steps += `The determinant of the coefficient matrix is zero, and the determinants of the augmented matrices are also zero.<br>
+                                      This means the lines are coincident and there are infinitely many solutions.`;
+                        } else {
+                            result = 'No solution (parallel lines)';
+                            steps += `The determinant of the coefficient matrix is zero, but the determinants of the augmented matrices are non-zero.<br>
+                                      This means the lines are parallel and there is no solution.`;
+                        }
+                    } else {
+                        // Unique solution
+                        const x = (c1 * b2 - c2 * b1) / det;
+                        const y = (a1 * c2 - a2 * c1) / det;
+                        result = `x = ${x}, y = ${y}`;
+                        steps += `The determinant of the coefficient matrix is non-zero, so there is a unique solution.<br>
+                                  Using Cramer's rule:<br>
+                                  x = (c₁b₂ - c₂b₁) / det = (${c1} × ${b2} - ${c2} × ${b1}) / ${det} = ${x}<br>
+                                  y = (a₁c₂ - a₂c₁) / det = (${a1} × ${c2} - ${a2} × ${c1}) / ${det} = ${y}`;
+                    }
+
+                    expression = `${a1}x + ${b1}y = ${c1}, ${a2}x + ${b2}y = ${c2}`;
+                }
+
+                equationResult.textContent = result;
+                equationResult.className = 'result success';
+
+                if (showEquationSteps.checked) {
+                    equationSteps.innerHTML = steps;
+                    equationSteps.classList.add('show');
+                } else {
+                    equationSteps.classList.remove('show');
+                }
+
+                addToHistory(expression, result);
+            } catch (error) {
+                equationResult.textContent = error.message;
+                equationResult.className = 'result error';
+            }
+        });
+
+        showEquationSteps.addEventListener('change', () => {
+            if (showEquationSteps.checked && equationSteps.innerHTML) {
+                equationSteps.classList.add('show');
+            } else {
+                equationSteps.classList.remove('show');
+            }
+        });
+
+        // Initialize history display
+        updateHistoryDisplay();
+    </script>
